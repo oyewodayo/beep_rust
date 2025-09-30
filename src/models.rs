@@ -69,6 +69,29 @@ pub struct Question {
     pub updated_at: DateTime<Utc>,
 }
 
+
+impl Question {
+    /// Get option text by letter label
+    pub fn get_option_by_label(&self, label: &str) -> Option<&String> {
+        let index = (label.chars().next()? as usize)
+            .checked_sub('A' as usize)?;
+        self.options.0.get(index)
+    }
+    
+    /// Validate if user's answer is correct
+    pub fn is_correct_answer(&self, user_answers: &[String]) -> bool {
+        let correct = &self.correct_answer.0;
+        
+        // Same length
+        if user_answers.len() != correct.len() {
+            return false;
+        }
+        
+        // All correct answers present
+        user_answers.iter().all(|ans| correct.contains(ans))
+    }
+}
+
 // For API responses - clean types without Json wrapper
 #[derive(Debug, Serialize)]
 pub struct QuestionResponse {
