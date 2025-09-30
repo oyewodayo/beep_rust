@@ -205,7 +205,7 @@ pub async fn get_questions(
         )
     })?;
 
-    // ✅ Fixed: Map Vec<Question> to Vec<QuestionResponse>
+    //  Fixed: Map Vec<Question> to Vec<QuestionResponse>
     let response_questions: Vec<QuestionResponse> = questions
         .into_iter()
         .map(QuestionResponse::from)
@@ -217,7 +217,7 @@ pub async fn get_questions(
 pub async fn get_question(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
-) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let question = sqlx::query_as::<_, Question>("SELECT * FROM questions WHERE id = $1")
         .bind(id)
         .fetch_optional(&pool)
@@ -230,7 +230,7 @@ pub async fn get_question(
         })?;
 
     match question {
-        Some(question) => Ok(Json(ApiResponse::success(QuestionResponse::from(question)))), // ✅ Convert to response
+        Some(question) => Ok(Json(ApiResponse::success(QuestionResponse::from(question)))), //  Convert to response
         None => Err((
             StatusCode::NOT_FOUND,
             Json(ApiResponse::error("Question not found".to_string())),
@@ -241,7 +241,7 @@ pub async fn get_question(
 pub async fn create_question(
     State(pool): State<PgPool>,
     Json(payload): Json<CreateQuestion>,
-) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let difficulty = payload.difficulty.unwrap_or(Difficulty::Medium);
     
     let question = sqlx::query_as::<_, Question>(
@@ -253,12 +253,12 @@ pub async fn create_question(
     .bind(payload.topic_id)
     .bind(payload.question_number)
     .bind(payload.question)
-    .bind(SqlxJson(&payload.options))              // ✅ Fixed: Wrapped in SqlxJson
-    .bind(SqlxJson(&payload.correct_answer))       // ✅ Fixed: Wrapped in SqlxJson
+    .bind(SqlxJson(&payload.options))              //  Fixed: Wrapped in SqlxJson
+    .bind(SqlxJson(&payload.correct_answer))       //  Fixed: Wrapped in SqlxJson
     .bind(payload.explanation)
     .bind(payload.question_type)
     .bind(difficulty)
-    .bind(payload.tags.as_ref().map(|t| SqlxJson(t))) // ✅ Fixed: Wrapped in SqlxJson
+    .bind(payload.tags.as_ref().map(|t| SqlxJson(t))) //  Fixed: Wrapped in SqlxJson
     .fetch_one(&pool)
     .await
     .map_err(|e| {
@@ -268,14 +268,14 @@ pub async fn create_question(
         )
     })?;
 
-    Ok(Json(ApiResponse::success(QuestionResponse::from(question)))) // ✅ Convert to response
+    Ok(Json(ApiResponse::success(QuestionResponse::from(question)))) //  Convert to response
 }
 
 pub async fn update_question(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,
     Json(payload): Json<UpdateQuestion>,
-) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<QuestionResponse>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let question = sqlx::query_as::<_, Question>(
         "UPDATE questions SET 
             topic_id = COALESCE($1, topic_id),
@@ -292,12 +292,12 @@ pub async fn update_question(
     .bind(payload.topic_id)
     .bind(payload.question_number)
     .bind(payload.question)
-    .bind(payload.options.as_ref().map(|o| SqlxJson(o)))        // ✅ Fixed: Wrapped in SqlxJson
-    .bind(payload.correct_answer.as_ref().map(|c| SqlxJson(c))) // ✅ Fixed: Wrapped in SqlxJson
+    .bind(payload.options.as_ref().map(|o| SqlxJson(o)))        //  Fixed: Wrapped in SqlxJson
+    .bind(payload.correct_answer.as_ref().map(|c| SqlxJson(c))) //  Fixed: Wrapped in SqlxJson
     .bind(payload.explanation)
     .bind(payload.question_type)
     .bind(payload.difficulty)
-    .bind(payload.tags.as_ref().map(|t| SqlxJson(t)))           // ✅ Fixed: Wrapped in SqlxJson
+    .bind(payload.tags.as_ref().map(|t| SqlxJson(t)))           //  Fixed: Wrapped in SqlxJson
     .bind(id)
     .fetch_optional(&pool)
     .await
@@ -309,7 +309,7 @@ pub async fn update_question(
     })?;
 
     match question {
-        Some(question) => Ok(Json(ApiResponse::success(QuestionResponse::from(question)))), // ✅ Convert to response
+        Some(question) => Ok(Json(ApiResponse::success(QuestionResponse::from(question)))), //  Convert to response
         None => Err((
             StatusCode::NOT_FOUND,
             Json(ApiResponse::error("Question not found".to_string())),
@@ -346,7 +346,7 @@ pub async fn delete_question(
 pub async fn get_questions_by_topic(
     State(pool): State<PgPool>,
     Path(topic_id): Path<Uuid>,
-) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let questions = sqlx::query_as::<_, Question>(
         "SELECT * FROM questions WHERE topic_id = $1 ORDER BY question_number"
     )
@@ -360,7 +360,7 @@ pub async fn get_questions_by_topic(
         )
     })?;
 
-    // ✅ Fixed: Convert to response
+    //  Fixed: Convert to response
     let response_questions: Vec<QuestionResponse> = questions
         .into_iter()
         .map(QuestionResponse::from)
@@ -372,7 +372,7 @@ pub async fn get_questions_by_topic(
 pub async fn get_questions_by_type(
     State(pool): State<PgPool>,
     Path(question_type): Path<String>,
-) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let q_type = match question_type.to_lowercase().as_str() {
         "single" => QuestionType::Single,
         "multiple" => QuestionType::Multiple,
@@ -400,7 +400,7 @@ pub async fn get_questions_by_type(
         )
     })?;
 
-    // ✅ Fixed: Convert to response
+    //  Fixed: Convert to response
     let response_questions: Vec<QuestionResponse> = questions
         .into_iter()
         .map(QuestionResponse::from)
@@ -412,7 +412,7 @@ pub async fn get_questions_by_type(
 pub async fn search_questions(
     State(pool): State<PgPool>,
     Path(query): Path<String>,
-) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { // ✅ Changed return type
+) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> { //  Changed return type
     let search_pattern = format!("%{}%", query);
     
     let questions = sqlx::query_as::<_, Question>(
@@ -431,7 +431,7 @@ pub async fn search_questions(
         )
     })?;
 
-    // ✅ Fixed: Convert to response
+    //  Fixed: Convert to response
     let response_questions: Vec<QuestionResponse> = questions
         .into_iter()
         .map(QuestionResponse::from)
@@ -468,12 +468,12 @@ pub async fn bulk_create_questions(
         .bind(topic_id)
         .bind(question_data.question_number)
         .bind(&question_data.question)
-        .bind(SqlxJson(&question_data.options))           // ✅ Fixed: Wrapped in SqlxJson
-        .bind(SqlxJson(&question_data.correct_answer))    // ✅ Fixed: Wrapped in SqlxJson
+        .bind(SqlxJson(&question_data.options))           //  Fixed: Wrapped in SqlxJson
+        .bind(SqlxJson(&question_data.correct_answer))    //  Fixed: Wrapped in SqlxJson
         .bind(&question_data.explanation)
         .bind(&question_data.question_type)
         .bind(question_data.difficulty.as_ref().unwrap_or(&Difficulty::Medium))
-        .bind(question_data.tags.as_ref().map(|t| SqlxJson(t))) // ✅ Fixed: Wrapped in SqlxJson
+        .bind(question_data.tags.as_ref().map(|t| SqlxJson(t))) //  Fixed: Wrapped in SqlxJson
         .execute(&mut *transaction)
         .await;
 

@@ -9,7 +9,8 @@ use std::collections::HashMap;
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
-// === Domain Models ===
+
+
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Topic {
     pub id: Uuid,
@@ -51,8 +52,7 @@ pub enum Difficulty {
     Medium,
     Hard,
 }
-
-// === Question Models - Using Json<Vec<String>> for consistency ===
+// === Question Models ===
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Question {
     pub id: Uuid,
