@@ -19,14 +19,19 @@ async fn main() -> anyhow::Result<()> {
     // Create application routes - FIXED SYNTAX: use {id} instead of :id
     let app = Router::new()
         .route("/health", get(health_check))
-        .route("/topics", get(handlers::get_topics).post(handlers::create_topic))
+        .route("/topics",
+             get(handlers::get_topics)
+             .post(handlers::create_topic))
         .route("/topics/{id}", 
             get(handlers::get_topic)
             .put(handlers::update_topic)
             .delete(handlers::delete_topic)
         )
         .route("/topics/slug/{slug}", get(handlers::get_topic_by_slug)) // Add this
-        .route("/questions", get(handlers::get_questions).post(handlers::create_question))
+        .route("/questions",
+            get(handlers::get_questions)
+            .post(handlers::create_question))
+        .route("/questions/bulk", post(handlers::bulk_create_questions))
         .route("/questions/{id}", 
             get(handlers::get_question)
             .put(handlers::update_question)
@@ -35,7 +40,11 @@ async fn main() -> anyhow::Result<()> {
         .route("/questions/topic/{topic_id}", get(handlers::get_questions_by_topic))
         .route("/questions/type/{question_type}", get(handlers::get_questions_by_type))
         .route("/questions/search/{query}", get(handlers::search_questions))
-        .layer(CorsLayer::new().allow_origin(Any).allow_methods(Any).allow_headers(Any))
+        .layer(
+            CorsLayer::new().allow_origin(Any)
+            .allow_methods(Any)
+            .allow_headers(Any)
+        )
         .with_state(pool);
 
     // Start server

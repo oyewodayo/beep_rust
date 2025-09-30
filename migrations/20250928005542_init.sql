@@ -25,7 +25,7 @@ CREATE TABLE questions (
     explanation TEXT NOT NULL,
     question_type question_type NOT NULL DEFAULT 'single',
     difficulty difficulty_level DEFAULT 'medium',
-    tags TEXT[] DEFAULT '{}',
+    tags JSONB NOT NULL DEFAULT '[]',  
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
     UNIQUE(topic_id, question_number)
@@ -35,7 +35,7 @@ CREATE TABLE questions (
 CREATE INDEX idx_questions_topic_id ON questions(topic_id);
 CREATE INDEX idx_questions_question_number ON questions(question_number);
 CREATE INDEX idx_questions_difficulty ON questions(difficulty);
-CREATE INDEX idx_questions_tags ON questions USING GIN(tags);
+CREATE INDEX idx_questions_tags ON questions USING GIN (tags jsonb_path_ops);
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -44,11 +44,15 @@ BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$$ LANGUAGE plpgsql;
 
 -- Create triggers for updated_at
-CREATE TRIGGER update_topics_updated_at BEFORE UPDATE ON topics
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_topics_updated_at
+BEFORE UPDATE ON topics
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
 
-CREATE TRIGGER update_questions_updated_at BEFORE UPDATE ON questions
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+CREATE TRIGGER update_questions_updated_at
+BEFORE UPDATE ON questions
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
