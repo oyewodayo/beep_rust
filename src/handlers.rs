@@ -183,11 +183,25 @@ pub struct QuestionQuery {
 pub async fn get_questions(
     State(pool): State<PgPool>,
     Query(query): Query<QuestionQuery>,
-) -> Result<Json<ApiResponse<Vec<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> {
+) -> Result<Json<ApiResponse<PaginatedResponse<QuestionResponse>>>, (StatusCode, Json<ApiResponse<()>>)> {
     let page = query.page.unwrap_or(1).max(1);
     let limit = query.limit.unwrap_or(20).max(1).min(100);
     let offset = (page - 1) * limit;
 
+    // Get total count
+    let total_count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM questions"
+    )
+    .fetch_one(&pool)
+    .await
+    .map_err(|e| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            Json(ApiResponse::error(format!("Failed to count questions: {}", e))),
+        )
+    })?;
+
+    // Get paginated questions
     let questions = sqlx::query_as::<_, Question>(
         "SELECT q.* FROM questions q 
          JOIN topics t ON q.topic_id = t.id 
@@ -205,15 +219,18 @@ pub async fn get_questions(
         )
     })?;
 
-    //  Fixed: Map Vec<Question> to Vec<QuestionResponse>
     let response_questions: Vec<QuestionResponse> = questions
         .into_iter()
         .map(QuestionResponse::from)
         .collect();
 
-    Ok(Json(ApiResponse::success(response_questions)))
-}
+    let paginated_response = PaginatedResponse {
+        items: response_questions,
+        pagination: PaginationMeta::new(page, limit, total_count),
+    };
 
+    Ok(Json(ApiResponse::success(paginated_response)))
+}
 pub async fn get_question(
     State(pool): State<PgPool>,
     Path(id): Path<Uuid>,

@@ -141,7 +141,11 @@ impl From<Question> for QuestionResponse {
             topic_id: q.topic_id,
             question_number: q.question_number,
             question: q.question,
-            options: q.options.0,       
+            options: {
+                let mut opt = q.options.0;
+                opt.sort();
+                opt
+            },      
             correct_answer: q.correct_answer.0, 
             explanation: q.explanation,     
             question_type: q.question_type,
@@ -278,6 +282,36 @@ impl BulkQuestionData {
             question_type: self.question_type.clone(),
             difficulty: self.difficulty.clone(),
             tags: self.tags.clone(),
+        }
+    }
+}
+#[derive(Debug, Serialize)]
+pub struct PaginatedResponse<T> {
+    pub items: Vec<T>,
+    pub pagination: PaginationMeta,
+}
+
+#[derive(Debug, Serialize)]
+pub struct PaginationMeta {
+    pub current_page: i64,
+    pub per_page: i64,
+    pub total_items: i64,
+    pub total_pages: i64,
+    pub has_next: bool,
+    pub has_prev: bool,
+}
+
+impl PaginationMeta {
+    pub fn new(current_page: i64, per_page: i64, total_items: i64) -> Self {
+        let total_pages = (total_items as f64 / per_page as f64).ceil() as i64;
+        
+        Self {
+            current_page,
+            per_page,
+            total_items,
+            total_pages,
+            has_next: current_page < total_pages,
+            has_prev: current_page > 1,
         }
     }
 }
