@@ -6,8 +6,15 @@ use axum::{
 use serde::Deserialize;
 use sqlx::{PgPool, types::Json as SqlxJson}; // ← Import SqlxJson
 use uuid::Uuid;
+use crate::database;
 
-use crate::models::*;
+use crate::models::{
+    Topic, CreateTopic, UpdateTopic, 
+    Question, CreateQuestion, UpdateQuestion, QuestionType, Difficulty,
+    BulkCreateQuestions, BulkCreateResponse,
+    QuestionResponse, PaginatedResponse, PaginationMeta,
+    ApiResponse, // <-- Add this line to import ApiResponse
+};  
 
 // Topic handlers
 pub async fn get_topics(

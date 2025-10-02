@@ -10,31 +10,6 @@ use std::hash::{Hash, Hasher};
 use std::collections::hash_map::DefaultHasher;
 
 
-
-#[derive(Debug, Serialize, Deserialize, FromRow)]
-pub struct Topic {
-    pub id: Uuid,
-    pub name: String,
-    pub slug: String,
-    pub description: Option<String>,
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct CreateTopic {
-    pub name: String,
-    pub slug: Option<String>,
-    pub description: Option<String>,
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UpdateTopic {
-    pub name: Option<String>,
-    pub description: Option<String>,
-    pub slug: Option<String>,
-}
-
 // === Enums with proper serde attributes ===
 #[derive(Debug, Serialize, Deserialize, Clone, Type, PartialEq)]
 #[sqlx(type_name = "question_type", rename_all = "lowercase")]
@@ -211,33 +186,6 @@ pub struct BulkCreateResponse {
     pub errors: Vec<String>,
 }
 
-// === Response Types ===
-#[derive(Debug, Serialize)]
-pub struct ApiResponse<T> {
-    pub success: bool,
-    pub data: T,
-    pub message: Option<String>,
-}
-
-impl<T> ApiResponse<T> {
-    pub fn success(data: T) -> Self {
-        Self {
-            success: true,
-            data,
-            message: None,
-        }
-    }
-}
-
-impl ApiResponse<()> {
-    pub fn error(message: String) -> Self {
-        Self {
-            success: false,
-            data: (),
-            message: Some(message),
-        }
-    }
-}
 
 // === Utility Functions ===
 pub fn generate_slug(name: &str) -> String {

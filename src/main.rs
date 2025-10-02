@@ -1,6 +1,7 @@
-mod models;
-mod handlers;
+
 mod database;
+mod handlers;
+mod models;
 
 use axum::{
     routing::{get, post, put, delete},
@@ -21,35 +22,35 @@ async fn main() -> anyhow::Result<()> {
         .route("/health", get(health_check))
         .route(
             "/topics",
-            get(handlers::get_topics).post(handlers::create_topic),
+            get(handlers::topic::get_topics).post(handlers::topic::create_topic),
         )
         .route(
             "/topics/{id}",
-            get(handlers::get_topic)
-                .put(handlers::update_topic)
-                .delete(handlers::delete_topic),
+            get(handlers::topic::get_topic)
+                .put(handlers::topic::update_topic)
+                .delete(handlers::topic::delete_topic),
         )
-        .route("/topics/slug/{slug}", get(handlers::get_topic_by_slug))
+        .route("/topics/slug/{slug}", get(handlers::topic::get_topic_by_slug))
         .route(
             "/questions",
-            get(handlers::get_questions).post(handlers::create_question),
+            get(handlers::question::get_questions).post(handlers::question::create_question),
         )
-        .route("/questions/bulk", post(handlers::bulk_create_questions))
+        .route("/questions/bulk", post(handlers::question::bulk_create_questions))
         .route(
             "/questions/{id}",
-            get(handlers::get_question)
-                .put(handlers::update_question)
-                .delete(handlers::delete_question),
+            get(handlers::question::get_question)
+                .put(handlers::question::update_question)
+                .delete(handlers::question::delete_question),
         )
         .route(
             "/questions/topic/{topic_id}",
-            get(handlers::get_questions_by_topic),
+            get(handlers::question::get_questions_by_topic),
         )
         .route(
             "/questions/type/{question_type}",
-            get(handlers::get_questions_by_type),
+            get(handlers::question::get_questions_by_type),
         )
-        .route("/questions/search/{query}", get(handlers::search_questions))
+        .route("/questions/search/{query}", get(handlers::question::search_questions))
         .with_state(pool);
 
     // Wrap with /api prefix
